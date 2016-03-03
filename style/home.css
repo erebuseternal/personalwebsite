@@ -3,9 +3,45 @@ body {
 	background-size: cover;
 	background-attachment: fixed;
 }
+.menu {
+	width: 250px;
+	height: 80px;
+	background-color: rgb(23, 199, 236);
+	font-size: 1.5em;
+	text-align: center;
+	color: white;
+	font-weight: bold;
+	font-family: monospace;
+	margin: 25px;
+}
 
-.project {
-	width:250px;
+.menu:hover {
+	background-color: rgb(34, 110, 247);
+}
+
+.menu p {
+	position: relative;
+	top: 25px;
+}
+.software {
+	border-top: 10px solid rgb(23, 199, 236);
+	width: 80%;
+	max-width: 900px;
+	min-width: 300px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.clear {
+	clear: both;
+}
+
+
+div.project {
+	position: relative;
+	width: 250px;
+	float: left;
+	padding: 25px;
 }
 
 button.project {
@@ -16,7 +52,7 @@ button.project {
 	background-color: rgb(232,232,232);
 	opacity: 0.85;
 	
-	font-size: 4em;
+	font-size: 3em;
 	font-family: monospace;
 	font-weight: bold;
 }
@@ -29,7 +65,7 @@ div p {
 	font-size: 1em;
 	font-family: monospace;
 	font-weight: bold;
-	text-align: justify;
+	text-align: center;
 	overflow: hidden;
 	height: 100px;
 	/*background-color: rgb(253, 148, 6);*/
