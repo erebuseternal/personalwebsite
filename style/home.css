@@ -1,0 +1,51 @@
+body {
+	background-image: url('ocean.jpg');
+	background-size: cover;
+	background-attachment: fixed;
+}
+
+.project {
+	width:250px;
+}
+
+button.project {
+	width: 250px;
+	height: 155px;
+	border-radius: 10px;
+	border: none;
+	background-color: rgb(232,232,232);
+	opacity: 0.85;
+	
+	font-size: 4em;
+	font-family: monospace;
+	font-weight: bold;
+}
+
+div p {
+	margin: 10px;
+}
+
+.project div {
+	font-size: 1em;
+	font-family: monospace;
+	font-weight: bold;
+	text-align: justify;
+	overflow: hidden;
+	height: 100px;
+	/*background-color: rgb(253, 148, 6);*/
+	background-color: rgb(23, 199, 236);
+	color: white;
+	border-radius: 0px 0px 10px 10px;
+	visibility: hidden;
+}
+
+button.project:hover {
+	background-color: rgb(243,243,243);
+	opacity: 1;
+	border-radius: 10px 10px 0px 0px;
+}
+
+button.project:hover+div {
+	visibility: visible;
+}
+
