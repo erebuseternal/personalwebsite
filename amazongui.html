@@ -1,0 +1,215 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="style/guide.css" />
+		<title>ec2 GUI</title>
+	</head>
+	<body>
+		<div onclick="window.location.href='index.html'" class="menu">
+			<p>erebuseternal</p>
+		</div>
+		<div class="section">
+			<h1>Setting Up an Amazon Instance with a GUI</h1>
+			<p>
+			This process divides itself into four steps:
+			</p>
+			<ul>
+				<li>Setting up an ec2 Instance</li>
+				<li>Installing the GUI on that Instance</li>
+				<li>Installing a VNC  Server</li>
+				<li>Configuring the Firewall</li>
+				<li>Installing a VNC Client</li>
+			</ul>
+			<p>
+			We will go through each of these in order. Note that we will be working with Red Hat Linux.
+			</p>
+		</div>
+		<div class="section">
+			<h1>Setting up an ec2 Instance</h1>
+			<p>There are only two things essential in the following</p>
+			<ul>
+				<li>You have Red Hat Linux installed on your instance</li>
+				<li>You are allow traffic inbound from anywhere into port 5901 (TCP Protocol)</li>
+			</ul>
+			<p>First off I am going to assume you know how to at least start creating an ec2 instance.
+			So, once you have entered the console for creating one you are going to be prompted to 
+			select an OS for your instance. You can choose either Red Hat or Ubuntu, but for this 
+			tutorial I am going to use Red Hat. So choose that one :). Note that you cannot choose
+			Amazon's version of Linux because it is not setup to have a desktop installed. Also 
+			make sure that the OS you choose has an EBS storage volume. (Should be default)
+			</p>
+			<p>
+			Now that you have that selected, go ahead and choose the various parameters you desire for 
+			your instance up until the security group (all the defualt values work just fine). Once you 
+			get to the security group choose or select a security group that you want to use. Then towards
+			the bottom of the page, hit the "Add Rule" but. Choose a custom TCP rule with a Port Range 5901
+			and accepting from any source. With that go ahead and finish creating your instance.
+			</p>
+			<p>
+			That's part one.
+			</p>
+		</div>
+		<div class="section">
+			<h1>Installing the GUI</h1>
+			<p>So now we need to install the actual GUI. Having entered your instance, (you can use
+			the directions on Amazon's instance console to learn how to connect either use your browser 
+			or putty), you will now install a group of software which will comprise your desktop.
+			</p>
+			<p>
+			To do so enter the following command into your instance's terminal:
+			</p>
+			<p class="code">
+				<code>sudo yum groupinstall 'Server with GUI'
+				</code>
+			</p>
+			<p class="note"><i>As a note you can run <code>sudo yum group list</code>
+			to see what other groups of software you have.</i>
+			</p>
+			<p>And that is part two</p>
+		</div>
+		<div class="section">
+			<h1>Installing the VNC Server</h1>
+			<p>VNC or Virutal Network Computing allows for the sharing of graphical 
+				desktops. So we will install it, so that you can access the desktop 
+				of your ec2 instance from your browser. VNC neds two parts to work,
+				a server on your instance and a client on the computer you will be 
+				using to connect to the desktop on your instance. This section deals 
+				with the first. 
+			</p>
+			<p>
+			For a more detailed set of installation instructions go
+			<a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/ch-TigerVNC.html">
+			here</a>
+			</p>
+			<h2>Installing the software</h2>
+			<p>
+			Simply run:
+			</p>
+			<p class="code">
+				<code>sudo yum install tigervnc-server 
+				</code>
+			</p>
+			<h2>Configuring the VNC Server</h2>
+			<p>The following is just what the directions in <code>/lib/systemd/system/vncserver@.service</code>
+			entail. 
+			</p>
+			<p>First copy <code>/lib/systemd/system/vncserver@.service</code> into 
+			<code>/etc/systemd/system/vncserver@.service</code> with:
+			</p>
+			<p class="code">
+				<code>sudo cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@.service
+				</code>
+			</p>
+			<p>Next edit <code>/etc/systemd/system/vncserver@.service</code> by replacing 
+			each instance of <USER> with ec2-user.
+			</p>
+			<p>Run the following to make the changes take effect:</p>
+			<p class="code">
+				<code>sudo systemctl daemon-reload</code>
+			</p>
+			<h2>Setting Credentials</h2>
+			<p> Use <code>sudo psswd ec2-user</code> to set the password for 
+			the ec2-user, and use <code>vncpasswd</code> to set the password
+			for your vnc server (do NOT <code>sudo</code> it!!!).
+			</p>
+			<p>Now edit the <code>PasswordAuthentification</code> line in 
+			<code>/etc/ssh/sshd_config</code> to be:
+			</p>
+			<p class="code">
+				<code>PasswordAuthentification yes</code>
+			</p>
+			<h2>Starting and Enabling the VNC Server</h2>
+			<p>To start the server run:
+			</p>
+			<p class="code">
+				<code>sudo systemctl start vncserver@:1.service</code>
+				</code>
+			</p>
+			<p>To make sure that the server comes up on system start run:
+			</p>
+			<p class="code">
+				<code>sudo systemctl enable vncserver@:1.service</code>
+				</code>
+			</p>
+			<p>Now that you have started up your server it will be running 
+			on port 5901. In the next step we will use this port to connect 
+			to our desktop using a VNC client.</p>
+		</div>
+		<div class="section">
+			<h1>Configuring the Firewall</h1>
+			<p>Red Hat Linux's default firewall is such that we won't be able to connect to our instance until 
+			we modify it. We will be able to do such modifications using iptables, but at least on the instance 
+			with RHEL that I had, iptables as a service was not installed.
+			</p>
+			<h2>Installing iptables as a Service</h2>
+			<p>So first install iptables as a service with:
+			</p>
+			<p class="code">
+				<code>sudo yum install iptables-services
+				</code>
+			</p>
+			<p>Then disable the current firewall and enable iptables using 
+			the following lines.
+			</p>
+			<p class="code">
+				<code>sudo systemctl mask firewalld</br>
+				sudo systemctl enable iptables</br>
+				sudo systemctl enable ip6tables
+				</code>
+			</p>
+			<p>Now we stop firewalld and start iptables with these lines
+			</p>
+			<p class="code">
+				<code>sudo systemctl stop firewalld</br>
+				sudo systemctl start iptables</br>
+				sudo systemctl start ip6tables
+				</code>
+			</p>
+			<h2>Configuring iptables</h2>
+			<p>For the most basic iptables settings that will simply open your instance 
+			up to the world simply run the following lines
+			</p>
+			<p class="code">
+				<code>sudo iptables -F</br>
+				sudo iptables -X</br>
+				sudo iptables -t nat -F</br>
+				sudo iptables -t nat -X</br>
+				sudo iptables -t mangle -F</br>
+				sudo iptables -t mangle -X</br>
+				sudo iptables -P INPUT ACCEPT</br>
+				sudo iptables -P FORWARD ACCEPT</br>
+				sudo iptables -P OUTPUT ACCEPT
+				</code>
+			</p>
+			<p>Then to save these rules so that they will persist through a reboot, run:
+			</p>
+			<p class="code">
+				<code>sudo /sbin/service iptables save
+				</code>
+			</p>
+			<p>And that's that! I've chosen these settings because they work and other settings will build off of them in terms 
+			of specifity. In no way are these the only rules that will allow your GUI to be accessible by a VNC client.</p>
+		</div>
+		<div class="section">
+			<h1>VNC Client and Connecting to Your Desktop</h1>
+			<p>Download the VNC Viewer for Google Chrome (which can be found in Google's app store). Then open up that app. In the box where 
+			you must put the address of the computer you want to connect to, put <code>[public-dns of ec2 instance]:5901</code> 
+			(i.e. you will accessing port 5901 on your ec2 instance).
+			<p>On connection you will first be asked for your vncpassword and then for your ec2-user password.
+			</p>
+		</div>
+		<div class="section">
+			<h2>Credits</h2>
+			<ul>
+				<li><a href="https://linuxconfig.org/install-gnome-gui-on-rhel-7-linux-server">Desktop Installation</a></li>
+				<li><a href="http://devopscube.com/setup-gui-for-amazon-ec2-linux/">Credentials, Port Number, VNC Client</a></li>
+				<li><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/ch-TigerVNC.html">VNC Server and VNC Configuration</a></li>
+				<li><a href="http://wiki.loovsys.eu/index.php/Clear_all_iptable_rules_and_allow_everything">iptable Rules</a></li>
+				<li><a href="https://www.certdepot.net/rhel7-disable-firewalld-use-iptables/">iptables as a Service</a></li>
+				<li><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/sect-Security_Guide-IPTables-Saving_IPTables_Rules.html">Saving iptables</a></li>
+			</ul>
+		</div>
+		<footer>
+			<p>Copyright &#9400; 2016 by Marcel Gietzmann-Sanders</p>
+		</footer>	
+	</body>
+</html>
